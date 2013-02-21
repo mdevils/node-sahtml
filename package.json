@@ -1,0 +1,30 @@
+{
+  "name": "sahtml",
+  "version": "1.0.0",
+  "description": "Simple API for HTML.",
+  "keywords": [
+    "html",
+    "html simple",
+    "html simple api",
+    "html parse"
+  ],
+  "author": {
+    "name": "Marat Dulin",
+    "email": "mdevils@yandex.ru"
+  },
+  "dependencies": {
+    "html-entities": ">= 1.0.9"
+  },
+  "devDependencies": {
+    "colors": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mdevils/node-sahtml.git"
+  },
+  "main": "index",
+  "engines": [
+    "node >= 0.4.0"
+  ],
+  "license": "MIT"
+}
