@@ -59,7 +59,3 @@ assertRender " ", "&nbsp;"
 assertRender """<b attr="">""", "<b attr="
 assertRender """<!--[CDATA[Hello World]]-->""", "<![CDATA[Hello World]]>"
 assertRender """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><![CDATA[Hello World]]>""", """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><![CDATA[Hello World]]>"""
-
-parser = new SAHtml('<!DOCTYPE html><html><head><title>Example</title></head><body><img src="/logo.png"/><a href="/">Hello World</a></body></html>')
-while ((token = parser.next()).type != 'eof')
-    console.log(token)
