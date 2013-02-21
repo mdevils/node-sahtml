@@ -115,7 +115,8 @@ class SAHtml
       if @pos >= len
         return {
           type: SAHtml.ENTITY_TAG_ATTR,
-          name: attrName.toLowerCase()
+          name: attrName.toLowerCase(),
+          pos: spos
         }
     else if @state is SAHtml.STATE_TAG_CONTENT
       return @EOF() if @pos >= len
