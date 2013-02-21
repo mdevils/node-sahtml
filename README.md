@@ -1,7 +1,7 @@
 node-sahtml
 ===========
 
-Simple API for HTML (node.js).
+Fast and low memory API for HTML (node.js).
 
 Returns HTML tokens one-by-one. Does not build DOM (Document Object Model).
 
