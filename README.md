@@ -18,7 +18,7 @@ Usage
 ```javascript
 var SAHtml = require('sahtml').SAHtml;
 
-var parser = new SAHtml('<!DOCTYPE html><html><head><title>Example</title></head><body><img src="/logo.png"/><a href="/">Hello World</a></body></html>');
+var parser = new SAHtml('<!DOCTYPE html><html><head><title>Example</title></head><body><img src="/logo.png"/><a href="/">Hello World</a></body></html>'),
     token;
 
 while ((token = parser.next()).type != 'eof') {
