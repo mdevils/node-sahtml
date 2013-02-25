@@ -2,6 +2,9 @@
 
 class SAHtml
 
+  encoder = new AllHtmlEntities
+  xmlEncoder = new XmlEntities
+
   @STATE_TAG_CONTENT: 1
   @STATE_TAG_DEF: 2
 
@@ -22,8 +25,8 @@ class SAHtml
     @pos = 0
     @state = SAHtml.STATE_TAG_CONTENT
     @currentTag = null
-    @encoder = new AllHtmlEntities
     @xhtml = false
+    @autoDetectXHtml = true
 
   isWhitespace: (c) -> c == ' ' || c == "\t" || c == "\r" || c == "\n" || c == "\f"
 
@@ -35,14 +38,21 @@ class SAHtml
     style: true
     xmp: true
 
+  noDecodeTags:
+    script: true
+    style: true
+
   getPos: -> @pos
   setPos: (@pos) ->
 
   isXHtml: -> @xhtml
   setXHtml: (@xhtml) ->
 
+  getAutoDetectXHtml: -> @autoDetectXHtml
+  setAutoDetectXHtml: (@autoDetectXHtml) ->
+
   decodeText: (text) ->
-    @encoder.decode(text).replace(/[\n\r\t\f ]+/g, ' ')
+    encoder.decode(text).replace(/[\n\r\t\f ]+/g, ' ')
 
   next: ->
     len = @len
@@ -67,7 +77,7 @@ class SAHtml
           (@pos++; break) if chr == '>'
           @pos++
         @state = SAHtml.STATE_TAG_CONTENT
-        if @currentTag && @noHtmlContentTags[@currentTag]
+        if @currentTag && !@xhtml && @noHtmlContentTags[@currentTag]
           return { type: SAHtml.ENTITY_TAG_DEF_END, pos: spos }
         else
           return { type: SAHtml.ENTITY_TAG_DEF_AUTOCLOSE_END, pos: spos }
@@ -122,7 +132,7 @@ class SAHtml
       return @EOF() if @pos >= len
       spos = @pos
       content = ''
-      if @currentTag && @noHtmlContentTags[@currentTag]
+      if @currentTag && !@xhtml && @noHtmlContentTags[@currentTag]
         endStr = "</#{@currentTag}>"
         endPos = @str.indexOf(endStr, @pos)
         if endPos == -1
@@ -133,7 +143,7 @@ class SAHtml
           @pos = endPos
           return {
             type: SAHtml.ENTITY_STRING,
-            value: @decodeText(content),
+            value: if @noDecodeTags[@currentTag] then content else @decodeText(content),
             pos: spos
           }
       while @pos < len
@@ -175,7 +185,7 @@ class SAHtml
                 endPos = len
               doctype = if endPos > @pos + 8 then @str.substring(@pos + 8, endPos) else ''
               @pos = endPos + 1
-              @xhtml = doctype.toLowerCase().indexOf('xhtml') != -1
+              @xhtml = doctype.toLowerCase().indexOf('xhtml') != -1 if @autoDetectXHtml
               return {
                 type: SAHtml.ENTITY_DOCTYPE,
                 value: doctype,
@@ -241,23 +251,29 @@ class SAHtml
     result
 
   render: (entities) ->
-    encoder = new XmlEntities
     result = []
+    encodeText = true;
     for entity in entities
       switch entity.type
-        when SAHtml.ENTITY_TAG_DEF then result.push "<#{entity.name}"
+        when SAHtml.ENTITY_TAG_DEF
+          result.push "<#{entity.name}"
+          if @noDecodeTags[entity.name] && !@xhtml
+            encodeText = false
         when SAHtml.ENTITY_TAG_ATTR
           if entity.value != undefined
-            result.push " #{entity.name}=\"#{encoder.encode(entity.value)}\""
+            result.push " #{entity.name}=\"#{xmlEncoder.encode(entity.value)}\""
           else
             result.push " #{entity.name}"
         when SAHtml.ENTITY_TAG_DEF_END then result.push ">"
         when SAHtml.ENTITY_TAG_DEF_AUTOCLOSE_END then result.push "/>"
-        when SAHtml.ENTITY_TAG_CLOSE then result.push "</#{entity.name}>"
-        when SAHtml.ENTITY_STRING then result.push encoder.encode(entity.value)
+        when SAHtml.ENTITY_TAG_CLOSE
+          result.push "</#{entity.name}>"
+          encodeText = true
+        when SAHtml.ENTITY_STRING then result.push (if encodeText then xmlEncoder.encode(entity.value) else entity.value)
         when SAHtml.ENTITY_DOCTYPE then result.push "<!DOCTYPE #{entity.value}>"
         when SAHtml.ENTITY_COMMENT then result.push "<!--#{entity.value}-->"
         when SAHtml.ENTITY_CDATA then result.push "<![CDATA[#{entity.value}]]>"
+        else throw Error('Unknown entity type: ' + entity.type + '.')
     result.join('')
 
 exports.SAHtml = SAHtml

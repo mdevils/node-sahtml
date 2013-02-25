@@ -49,6 +49,10 @@ assertEntities """<script>Hello <b>World</b></script>""", [{type: 'tagDef', name
 assertEntities """<![CDATA[Hello World]]>""", [{type: 'comment', value: '[CDATA[Hello World]]', pos: 0}]
 assertEntities """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><![CDATA[Hello World]]>""", [{type: 'doctype', value: 'html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"', pos: 0}, {type: 'cdata', value: 'Hello World', pos: 97}]
 
+assertRender "<script>alert(a<b);</script>", "<script>alert(a<b);</script>"
+assertRender """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><script>alert(a&gt;b);</script>""", """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><script>alert(a>b);</script>"""
+assertRender """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><script/>123""", """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><script/>123"""
+assertRender """<script>123""", """<script/>123"""
 assertRender "<b></b>", "<b></b>"
 assertRender "<b></b>", "<B></b>"
 assertRender "<b></b>", "<B></B>"
@@ -59,3 +63,7 @@ assertRender " ", "&nbsp;"
 assertRender """<b attr="">""", "<b attr="
 assertRender """<!--[CDATA[Hello World]]-->""", "<![CDATA[Hello World]]>"
 assertRender """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><![CDATA[Hello World]]>""", """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><![CDATA[Hello World]]>"""
+
+parser = new SAHtml("""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><script/>123""")
+parser.setAutoDetectXHtml(false)
+assertEquals """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><script>123""", parser.render(parser.all())
