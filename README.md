@@ -1,5 +1,5 @@
-node-sahtml
-===========
+sahtml
+======
 
 Fast and low memory API for HTML (node.js).
 
